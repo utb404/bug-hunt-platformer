@@ -6,15 +6,11 @@ const gameConfig = {
     jumpPower: -15,
     playerSpeed: 5,
     sprintDuration: 120000,
+    totalLevels: 3,
     bugs: [
         {type: "common", points: 1, color: "#ff4444"},
         {type: "flying", points: 2, color: "#44ff44"},
         {type: "critical", points: 10, color: "#ffaa00"}
-    ],
-    obstacles: [
-        {type: "glitchBlock", speed: 2},
-        {type: "falsePlatform", breakDelay: 500},
-        {type: "stacktrace", fallSpeed: 3}
     ]
 };
 
@@ -27,8 +23,90 @@ const colors = {
     gate: "#00ff88"
 };
 
+// Level Data
+const levelData = {
+    level1: {
+        name: "Спринт 1: Basic Debugging",
+        difficulty: "Новичок",
+        platforms: [
+            {x: 0, y: 550, width: 200, height: 50, type: "solid"},
+            {x: 250, y: 450, width: 100, height: 20, type: "solid"},
+            {x: 400, y: 350, width: 80, height: 20, type: "false"},
+            {x: 550, y: 300, width: 120, height: 20, type: "solid"},
+            {x: 700, y: 200, width: 100, height: 20, type: "solid"}
+        ],
+        bugs: [
+            {x: 100, y: 500, type: "common"},
+            {x: 300, y: 400, type: "common"},
+            {x: 450, y: 300, type: "flying"},
+            {x: 600, y: 250, type: "common"},
+            {x: 750, y: 150, type: "critical"}
+        ],
+        releaseGate: {x: 750, y: 120, width: 60, height: 80},
+        playerStart: {x: 50, y: 500}
+    },
+    level2: {
+        name: "Спринт 2: Integration Testing",
+        difficulty: "Средний", 
+        platforms: [
+            {x: 0, y: 550, width: 150, height: 50, type: "solid"},
+            {x: 200, y: 480, width: 80, height: 20, type: "false"},
+            {x: 320, y: 420, width: 100, height: 20, type: "solid"},
+            {x: 480, y: 360, width: 60, height: 20, type: "false"},
+            {x: 580, y: 300, width: 80, height: 20, type: "false"},
+            {x: 700, y: 240, width: 100, height: 20, type: "solid"},
+            {x: 500, y: 180, width: 120, height: 20, type: "solid"},
+            {x: 300, y: 120, width: 80, height: 20, type: "solid"}
+        ],
+        bugs: [
+            {x: 75, y: 500, type: "common"},
+            {x: 240, y: 430, type: "flying"},
+            {x: 370, y: 370, type: "common"},
+            {x: 520, y: 310, type: "flying"},
+            {x: 620, y: 250, type: "critical"},
+            {x: 750, y: 190, type: "common"},
+            {x: 560, y: 130, type: "flying"},
+            {x: 340, y: 70, type: "critical"}
+        ],
+        releaseGate: {x: 320, y: 40, width: 60, height: 80},
+        playerStart: {x: 50, y: 500}
+    },
+    level3: {
+        name: "Спринт 3: Production Hotfix",
+        difficulty: "Эксперт",
+        platforms: [
+            {x: 0, y: 550, width: 120, height: 50, type: "solid"},
+            {x: 160, y: 500, width: 60, height: 20, type: "false"},
+            {x: 260, y: 450, width: 80, height: 20, type: "false"},
+            {x: 380, y: 400, width: 100, height: 20, type: "solid"},
+            {x: 520, y: 350, width: 60, height: 20, type: "false"},
+            {x: 620, y: 300, width: 80, height: 20, type: "false"},
+            {x: 720, y: 250, width: 80, height: 20, type: "solid"},
+            {x: 600, y: 200, width: 70, height: 20, type: "false"},
+            {x: 450, y: 150, width: 90, height: 20, type: "solid"},
+            {x: 280, y: 100, width: 60, height: 20, type: "false"},
+            {x: 100, y: 50, width: 120, height: 20, type: "solid"}
+        ],
+        bugs: [
+            {x: 60, y: 500, type: "flying"},
+            {x: 190, y: 450, type: "common"},
+            {x: 300, y: 400, type: "flying"},
+            {x: 430, y: 350, type: "critical"},
+            {x: 550, y: 300, type: "flying"},
+            {x: 650, y: 250, type: "common"},
+            {x: 760, y: 200, type: "flying"},
+            {x: 630, y: 150, type: "critical"},
+            {x: 490, y: 100, type: "flying"},
+            {x: 310, y: 50, type: "critical"},
+            {x: 160, y: 0, type: "flying"}
+        ],
+        releaseGate: {x: 140, y: -30, width: 60, height: 80},
+        playerStart: {x: 50, y: 500}
+    }
+};
+
 // Game State
-let gameState = 'menu'; // menu, playing, paused, gameOver, leaderboard
+let gameState = 'menu';
 let canvas, ctx;
 let gameTime = 0;
 let sprintTimeLeft = gameConfig.sprintDuration;
@@ -36,6 +114,9 @@ let score = 0;
 let bugsCollected = 0;
 let gameLoop;
 let keys = {};
+let currentLevel = 1;
+let totalScore = 0;
+let levelScores = [];
 
 // Game Objects
 let player = {
@@ -50,29 +131,15 @@ let player = {
     animTime: 0
 };
 
-let platforms = [
-    {x: 0, y: 550, width: 200, height: 50, type: "solid"},
-    {x: 250, y: 450, width: 100, height: 20, type: "solid"},
-    {x: 400, y: 350, width: 80, height: 20, type: "false"},
-    {x: 550, y: 300, width: 120, height: 20, type: "solid"},
-    {x: 700, y: 200, width: 100, height: 20, type: "solid"},
-    {x: 200, y: 250, width: 60, height: 20, type: "false"},
-    {x: 500, y: 150, width: 80, height: 20, type: "solid"}
-];
-
-let bugs = [
-    {x: 100, y: 500, type: "common", collected: false, animFrame: 0},
-    {x: 300, y: 400, type: "common", collected: false, animFrame: 0},
-    {x: 450, y: 300, type: "flying", collected: false, animFrame: 0, floatOffset: 0},
-    {x: 600, y: 250, type: "common", collected: false, animFrame: 0},
-    {x: 750, y: 150, type: "critical", collected: false, animFrame: 0},
-    {x: 150, y: 200, type: "flying", collected: false, animFrame: 0, floatOffset: 0},
-    {x: 350, y: 100, type: "common", collected: false, animFrame: 0}
-];
-
-let releaseGate = {x: 750, y: 120, width: 60, height: 80};
+let platforms = [];
+let bugs = [];
+let releaseGate = {};
 let particles = [];
 let breakingPlatforms = [];
+
+// Original level data for resetting
+let originalPlatforms = [];
+let originalBugs = [];
 
 // DOM Elements
 let screens = {};
@@ -82,7 +149,9 @@ let ui = {};
 function init() {
     // Get DOM elements
     screens.mainMenu = document.getElementById('mainMenu');
+    screens.levelSelectScreen = document.getElementById('levelSelectScreen');
     screens.gameScreen = document.getElementById('gameScreen');
+    screens.levelCompleteScreen = document.getElementById('levelCompleteScreen');
     screens.gameOverScreen = document.getElementById('gameOverScreen');
     screens.leaderboardScreen = document.getElementById('leaderboardScreen');
     screens.instructionsModal = document.getElementById('instructionsModal');
@@ -90,6 +159,11 @@ function init() {
 
     ui.bugCount = document.getElementById('bugCount');
     ui.timeRemaining = document.getElementById('timeRemaining');
+    ui.currentLevelDisplay = document.getElementById('currentLevelDisplay');
+    ui.levelBugCount = document.getElementById('levelBugCount');
+    ui.levelSpeedBonus = document.getElementById('levelSpeedBonus');
+    ui.levelScore = document.getElementById('levelScore');
+    ui.levelCompleteTitle = document.getElementById('levelCompleteTitle');
     ui.finalBugCount = document.getElementById('finalBugCount');
     ui.speedBonus = document.getElementById('speedBonus');
     ui.totalScore = document.getElementById('totalScore');
@@ -106,9 +180,10 @@ function init() {
     // Set up event listeners
     setupEventListeners();
     
-    // Initialize leaderboard
+    // Initialize leaderboard and level progress
     loadLeaderboard();
     updateLeaderboardDisplay();
+    updateLevelSelectDisplay();
     
     // Show main menu
     showScreen('mainMenu');
@@ -116,14 +191,23 @@ function init() {
 
 function setupEventListeners() {
     // Menu buttons
-    document.getElementById('startGameBtn').addEventListener('click', startGame);
-    document.getElementById('leaderboardBtn').addEventListener('click', () => showScreen('leaderboard'));
+    document.getElementById('startGameBtn').addEventListener('click', () => startLevel(1));
+    document.getElementById('levelSelectBtn').addEventListener('click', () => showScreen('levelSelectScreen'));
+    document.getElementById('leaderboardBtn').addEventListener('click', () => showScreen('leaderboardScreen'));
     document.getElementById('instructionsBtn').addEventListener('click', () => showModal('instructions'));
     document.getElementById('closeInstructionsBtn').addEventListener('click', () => hideModal('instructions'));
 
+    // Level selection
+    document.getElementById('backFromLevelSelectBtn').addEventListener('click', () => showScreen('mainMenu'));
+    
+    // Level complete buttons
+    document.getElementById('nextLevelBtn').addEventListener('click', nextLevel);
+    document.getElementById('replayLevelBtn').addEventListener('click', () => startLevel(currentLevel));
+    document.getElementById('backToLevelSelectBtn').addEventListener('click', () => showScreen('levelSelectScreen'));
+
     // Game over buttons
     document.getElementById('saveScoreBtn').addEventListener('click', saveScore);
-    document.getElementById('playAgainBtn').addEventListener('click', startGame);
+    document.getElementById('playAgainBtn').addEventListener('click', () => startLevel(1));
     document.getElementById('backToMenuBtn').addEventListener('click', () => showScreen('mainMenu'));
 
     // Leaderboard buttons
@@ -133,7 +217,21 @@ function setupEventListeners() {
     // Pause buttons
     document.getElementById('pauseBtn').addEventListener('click', togglePause);
     document.getElementById('resumeBtn').addEventListener('click', togglePause);
+    document.getElementById('restartLevelBtn').addEventListener('click', () => restartCurrentLevel());
+    document.getElementById('restartPauseBtn').addEventListener('click', () => {
+        screens.pauseOverlay.classList.add('hidden');
+        restartCurrentLevel();
+    });
     document.getElementById('quitBtn').addEventListener('click', quitToMenu);
+
+    // Level card clicks
+    document.addEventListener('click', (e) => {
+        const levelCard = e.target.closest('.level-card');
+        if (levelCard && !levelCard.classList.contains('locked')) {
+            const level = parseInt(levelCard.dataset.level);
+            startLevel(level);
+        }
+    });
 
     // Keyboard controls
     document.addEventListener('keydown', handleKeyDown);
@@ -149,6 +247,7 @@ function setupEventListeners() {
 
 function handleKeyDown(e) {
     keys[e.code] = true;
+    keys[e.key] = true; // Also store by key name
     
     // Handle pause
     if (e.code === 'Escape' && gameState === 'playing') {
@@ -158,6 +257,7 @@ function handleKeyDown(e) {
 
 function handleKeyUp(e) {
     keys[e.code] = false;
+    keys[e.key] = false; // Also store by key name
 }
 
 function showScreen(screenName) {
@@ -173,7 +273,20 @@ function showScreen(screenName) {
         screens[screenName].classList.remove('hidden');
     }
     
-    gameState = screenName === 'gameScreen' ? 'playing' : screenName;
+    // Update game state
+    if (screenName === 'gameScreen') {
+        gameState = 'playing';
+    } else if (screenName === 'levelSelectScreen') {
+        gameState = 'levelSelect';
+    } else if (screenName === 'levelCompleteScreen') {
+        gameState = 'levelComplete';
+    } else if (screenName === 'gameOverScreen') {
+        gameState = 'gameOver';
+    } else if (screenName === 'leaderboardScreen') {
+        gameState = 'leaderboard';
+    } else {
+        gameState = 'menu';
+    }
 }
 
 function showModal(modalName) {
@@ -188,49 +301,105 @@ function hideModal(modalName) {
     }
 }
 
-function startGame() {
-    // Reset game state
-    resetGame();
+function loadLevel(levelNum) {
+    const levelKey = `level${levelNum}`;
+    const level = levelData[levelKey];
     
-    // Show game screen
+    if (!level) return false;
+    
+    // Store original data for resetting (deep copy)
+    originalPlatforms = level.platforms.map(p => ({...p}));
+    originalBugs = level.bugs.map(b => ({...b, collected: false, animFrame: 0, floatOffset: 0}));
+    
+    // Load platforms
+    platforms = originalPlatforms.map(p => ({...p, broken: false, breaking: false}));
+    
+    // Load bugs
+    bugs = originalBugs.map(b => ({...b}));
+    
+    // Load release gate
+    releaseGate = {...level.releaseGate};
+    
+    // Set player start position
+    player.x = level.playerStart.x;
+    player.y = level.playerStart.y;
+    
+    return true;
+}
+
+function startLevel(levelNum) {
+    currentLevel = levelNum;
+    
+    if (!loadLevel(levelNum)) {
+        console.error(`Level ${levelNum} not found`);
+        return;
+    }
+    
+    // Reset level-specific game state
+    resetLevelState();
+    
+    // Update UI
+    const level = levelData[`level${levelNum}`];
+    ui.currentLevelDisplay.textContent = level.name.split(':')[0];
+    
+    // Show game screen and start the game
     showScreen('gameScreen');
-    gameState = 'playing';
     
     // Start game loop
+    if (gameLoop) {
+        cancelAnimationFrame(gameLoop);
+    }
     gameLoop = requestAnimationFrame(update);
 }
 
-function resetGame() {
+function resetLevelState() {
     // Reset player
-    player.x = 50;
-    player.y = 500;
     player.velocityX = 0;
     player.velocityY = 0;
     player.onGround = false;
+    player.animFrame = 0;
+    player.animTime = 0;
     
-    // Reset game variables
+    // Reset level variables
     gameTime = 0;
     sprintTimeLeft = gameConfig.sprintDuration;
     score = 0;
     bugsCollected = 0;
     
-    // Reset bugs
-    bugs.forEach(bug => {
-        bug.collected = false;
-        bug.animFrame = 0;
-        if (bug.type === 'flying') {
-            bug.floatOffset = 0;
-        }
-    });
+    // Reset platforms from original data (deep copy)
+    platforms = originalPlatforms.map(p => ({...p, broken: false, breaking: false}));
     
-    // Reset platforms
+    // Reset bugs from original data (deep copy)
+    bugs = originalBugs.map(b => ({...b}));
+    
+    // Reset effects
     breakingPlatforms = [];
-    
-    // Reset particles
     particles = [];
     
     // Update UI
     updateUI();
+}
+
+function restartCurrentLevel() {
+    if (gameLoop) {
+        cancelAnimationFrame(gameLoop);
+    }
+    
+    // Reload and restart the current level
+    loadLevel(currentLevel);
+    resetLevelState();
+    
+    gameState = 'playing';
+    gameLoop = requestAnimationFrame(update);
+}
+
+function nextLevel() {
+    if (currentLevel < gameConfig.totalLevels) {
+        startLevel(currentLevel + 1);
+    } else {
+        // All levels completed
+        endGame(true);
+    }
 }
 
 function update(timestamp) {
@@ -257,9 +426,9 @@ function update(timestamp) {
     // Check collisions
     checkCollisions();
     
-    // Check win condition
-    if (checkWinCondition()) {
-        endGame(true);
+    // Check win condition (but not immediately on level start)
+    if (gameTime > 500 && checkWinCondition()) {
+        completeLevel();
         return;
     }
     
@@ -274,17 +443,21 @@ function update(timestamp) {
 }
 
 function updatePlayer(deltaTime) {
-    // Handle input
-    if (keys['KeyA'] || keys['ArrowLeft']) {
+    // Handle input - multiple key formats
+    let leftPressed = keys['KeyA'] || keys['ArrowLeft'] || keys['a'] || keys['A'];
+    let rightPressed = keys['KeyD'] || keys['ArrowRight'] || keys['d'] || keys['D'];
+    let jumpPressed = keys['KeyW'] || keys['ArrowUp'] || keys['Space'] || keys[' '] || keys['w'] || keys['W'];
+    
+    if (leftPressed) {
         player.velocityX = -gameConfig.playerSpeed;
-    } else if (keys['KeyD'] || keys['ArrowRight']) {
+    } else if (rightPressed) {
         player.velocityX = gameConfig.playerSpeed;
     } else {
         player.velocityX *= 0.8; // Friction
     }
     
     // Jump
-    if ((keys['KeyW'] || keys['ArrowUp'] || keys['Space']) && player.onGround) {
+    if (jumpPressed && player.onGround) {
         player.velocityY = gameConfig.jumpPower;
         player.onGround = false;
     }
@@ -323,7 +496,6 @@ function updateBugs(deltaTime) {
         // Flying bugs float
         if (bug.type === 'flying') {
             bug.floatOffset += deltaTime * 0.005;
-            bug.y += Math.sin(bug.floatOffset) * 0.5;
         }
     });
 }
@@ -353,25 +525,34 @@ function checkCollisions() {
         if (platform.broken) return;
         
         if (isColliding(player, platform)) {
-            // Check if landing on top
-            if (player.velocityY > 0 && player.y < platform.y) {
+            // Check if landing on top (player's bottom edge is above platform's top edge)
+            if (player.velocityY > 0 && player.y + player.height <= platform.y + 10) {
                 player.y = platform.y - player.height;
                 player.velocityY = 0;
                 player.onGround = true;
                 
-                // Handle false platforms
-                if (platform.type === 'false') {
+                // Handle false platforms - break them when player lands on top
+                if (platform.type === 'false' && !platform.breaking) {
                     breakPlatform(platform, index);
                 }
             }
             // Side collisions
-            else if (player.x + player.width > platform.x && player.x < platform.x + platform.width) {
-                if (player.x < platform.x) {
+            else {
+                // Left side collision
+                if (player.velocityX > 0 && player.x < platform.x) {
                     player.x = platform.x - player.width;
-                } else {
-                    player.x = platform.x + platform.width;
+                    player.velocityX = 0;
                 }
-                player.velocityX = 0;
+                // Right side collision
+                else if (player.velocityX < 0 && player.x + player.width > platform.x + platform.width) {
+                    player.x = platform.x + platform.width;
+                    player.velocityX = 0;
+                }
+                // Bottom collision (hitting platform from below)
+                else if (player.velocityY < 0 && player.y > platform.y + platform.height) {
+                    player.y = platform.y + platform.height;
+                    player.velocityY = 0;
+                }
             }
         }
     });
@@ -385,11 +566,6 @@ function checkCollisions() {
             collectBug(bug);
         }
     });
-    
-    // Release gate collision
-    if (isColliding(player, releaseGate)) {
-        endGame(true);
-    }
 }
 
 function isColliding(rect1, rect2) {
@@ -400,7 +576,7 @@ function isColliding(rect1, rect2) {
 }
 
 function breakPlatform(platform, index) {
-    if (platform.breaking) return;
+    if (platform.breaking || platform.broken) return;
     
     platform.breaking = true;
     
@@ -429,6 +605,8 @@ function breakPlatform(platform, index) {
 }
 
 function collectBug(bug) {
+    if (bug.collected) return;
+    
     bug.collected = true;
     bugsCollected++;
     
@@ -452,29 +630,65 @@ function checkWinCondition() {
     return isColliding(player, releaseGate);
 }
 
-function endGame(victory) {
+function completeLevel() {
     if (gameLoop) {
         cancelAnimationFrame(gameLoop);
     }
     
-    gameState = 'gameOver';
+    // Calculate level score
+    const timeBonus = Math.floor(sprintTimeLeft / 1000);
+    const levelScore = score + timeBonus;
+    
+    // Store level score
+    levelScores[currentLevel - 1] = levelScore;
+    totalScore = levelScores.reduce((sum, score) => sum + (score || 0), 0);
+    
+    // CRITICAL FIX: Unlock next level immediately when current level is completed
+    if (currentLevel < gameConfig.totalLevels) {
+        unlockLevel(currentLevel + 1);
+    }
+    
+    // Update level complete screen
+    const level = levelData[`level${currentLevel}`];
+    ui.levelCompleteTitle.textContent = `${level.name} завершён!`;
+    ui.levelBugCount.textContent = bugsCollected;
+    ui.levelSpeedBonus.textContent = timeBonus;
+    ui.levelScore.textContent = levelScore;
+    
+    // Show/hide next level button
+    const nextBtn = document.getElementById('nextLevelBtn');
+    if (currentLevel < gameConfig.totalLevels) {
+        nextBtn.textContent = `Спринт ${currentLevel + 1}`;
+        nextBtn.style.display = 'inline-flex';
+    } else {
+        nextBtn.style.display = 'none';
+    }
+    
+    showScreen('levelCompleteScreen');
+}
+
+function endGame(allCompleted) {
+    if (gameLoop) {
+        cancelAnimationFrame(gameLoop);
+    }
     
     // Calculate final score
-    const timeBonus = victory ? Math.floor(sprintTimeLeft / 1000) : 0;
-    const finalScore = score + timeBonus;
+    const timeBonus = allCompleted ? Math.floor(sprintTimeLeft / 1000) : 0;
+    const finalScore = totalScore + timeBonus;
     
     // Update game over screen
-    ui.gameOverTitle.textContent = victory ? 'Уровень пройден!' : 'Время вышло!';
+    ui.gameOverTitle.textContent = allCompleted ? 'Все спринты завершены!' : 'Время вышло!';
     ui.finalBugCount.textContent = bugsCollected;
     ui.speedBonus.textContent = timeBonus;
     ui.totalScore.textContent = finalScore;
     
     // Determine rating
     let rating = 'Новичок';
-    if (finalScore >= 50) rating = 'Эксперт';
-    else if (finalScore >= 30) rating = 'Профессионал';
-    else if (finalScore >= 15) rating = 'Опытный';
-    else if (finalScore >= 5) rating = 'Стажёр';
+    if (finalScore >= 100) rating = 'Легенда';
+    else if (finalScore >= 80) rating = 'Эксперт';
+    else if (finalScore >= 60) rating = 'Профессионал';
+    else if (finalScore >= 40) rating = 'Опытный';
+    else if (finalScore >= 20) rating = 'Стажёр';
     
     ui.performanceRating.textContent = rating;
     
@@ -489,6 +703,63 @@ function endGame(victory) {
     }
     
     showScreen('gameOverScreen');
+}
+
+function unlockLevel(levelNum) {
+    if (levelNum <= gameConfig.totalLevels) {
+        const unlockedLevels = getUnlockedLevels();
+        if (!unlockedLevels.includes(levelNum)) {
+            unlockedLevels.push(levelNum);
+            localStorage.setItem('bugHuntUnlockedLevels', JSON.stringify(unlockedLevels));
+            // Update the display immediately
+            updateLevelSelectDisplay();
+            console.log(`Level ${levelNum} unlocked!`); // Debug log
+        }
+    }
+}
+
+function getUnlockedLevels() {
+    const stored = localStorage.getItem('bugHuntUnlockedLevels');
+    return stored ? JSON.parse(stored) : [1];
+}
+
+function updateLevelSelectDisplay() {
+    const unlockedLevels = getUnlockedLevels();
+    console.log('Unlocked levels:', unlockedLevels); // Debug log
+    
+    // Update level 2 status
+    const level2Status = document.getElementById('level2Status');
+    const level2Card = document.querySelector('[data-level="2"]');
+    if (level2Card && level2Status) {
+        if (unlockedLevels.includes(2)) {
+            level2Status.textContent = 'Доступен';
+            level2Status.className = 'level-status unlocked';
+            level2Card.classList.remove('locked');
+            level2Card.classList.add('unlocked');
+        } else {
+            level2Status.textContent = 'Заблокирован';
+            level2Status.className = 'level-status locked';
+            level2Card.classList.add('locked');
+            level2Card.classList.remove('unlocked');
+        }
+    }
+    
+    // Update level 3 status
+    const level3Status = document.getElementById('level3Status');
+    const level3Card = document.querySelector('[data-level="3"]');
+    if (level3Card && level3Status) {
+        if (unlockedLevels.includes(3)) {
+            level3Status.textContent = 'Доступен';
+            level3Status.className = 'level-status unlocked';
+            level3Card.classList.remove('locked');
+            level3Card.classList.add('unlocked');
+        } else {
+            level3Status.textContent = 'Заблокирован';
+            level3Status.className = 'level-status locked';
+            level3Card.classList.add('locked');
+            level3Card.classList.remove('unlocked');
+        }
+    }
 }
 
 function render() {
@@ -709,6 +980,11 @@ function quitToMenu() {
         cancelAnimationFrame(gameLoop);
     }
     showScreen('mainMenu');
+    
+    // Reset game state
+    totalScore = 0;
+    levelScores = [];
+    currentLevel = 1;
 }
 
 // Leaderboard functions
@@ -733,7 +1009,7 @@ function saveScore() {
     leaderboard.push({
         name: name,
         score: finalScore,
-        bugs: bugsCollected,
+        levels: currentLevel,
         date: new Date().toLocaleDateString('ru-RU')
     });
     
