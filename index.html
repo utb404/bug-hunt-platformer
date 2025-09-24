@@ -15,8 +15,48 @@
                 <p class="game-subtitle">Платформер для QA-инженеров</p>
                 <div class="menu-buttons">
                     <button class="btn btn--primary" id="startGameBtn">Начать игру</button>
+                    <button class="btn btn--secondary" id="levelSelectBtn">Выбор уровня</button>
                     <button class="btn btn--secondary" id="leaderboardBtn">Таблица лидеров</button>
                     <button class="btn btn--outline" id="instructionsBtn">Инструкции</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Level Selection Screen -->
+        <div id="levelSelectScreen" class="screen hidden">
+            <div class="level-select-content">
+                <h2>Выбор спринта</h2>
+                <div class="levels-grid">
+                    <div class="level-card" data-level="1">
+                        <div class="level-number">1</div>
+                        <div class="level-info">
+                            <h3>Спринт 1: Basic Debugging</h3>
+                            <p class="level-difficulty">Новичок</p>
+                            <p class="level-description">Основы отладки и простые баги</p>
+                        </div>
+                        <div class="level-status unlocked">Доступен</div>
+                    </div>
+                    <div class="level-card" data-level="2">
+                        <div class="level-number">2</div>
+                        <div class="level-info">
+                            <h3>Спринт 2: Integration Testing</h3>
+                            <p class="level-difficulty">Средний</p>
+                            <p class="level-description">Интеграционное тестирование</p>
+                        </div>
+                        <div class="level-status" id="level2Status">Заблокирован</div>
+                    </div>
+                    <div class="level-card" data-level="3">
+                        <div class="level-number">3</div>
+                        <div class="level-info">
+                            <h3>Спринт 3: Production Hotfix</h3>
+                            <p class="level-difficulty">Эксперт</p>
+                            <p class="level-description">Критичные баги в продакшене</p>
+                        </div>
+                        <div class="level-status" id="level3Status">Заблокирован</div>
+                    </div>
+                </div>
+                <div class="level-select-buttons">
+                    <button class="btn btn--outline" id="backFromLevelSelectBtn">Назад</button>
                 </div>
             </div>
         </div>
@@ -40,6 +80,12 @@
                         <li>🚪 Release Gate - финиш уровня</li>
                     </ul>
                     <p><strong>Осторожно:</strong> Фальшивые платформы ломаются!</p>
+                    <p><strong>Уровни:</strong></p>
+                    <ul>
+                        <li>Спринт 1 - Новичок: основные механики</li>
+                        <li>Спринт 2 - Средний: больше препятствий</li>
+                        <li>Спринт 3 - Эксперт: максимальная сложность</li>
+                    </ul>
                     <p><strong>Время:</strong> 2 минуты на спринт</p>
                 </div>
                 <button class="btn btn--primary" id="closeInstructionsBtn">Понятно</button>
@@ -62,13 +108,40 @@
                 </div>
                 <div class="ui-right">
                     <div class="sprint-level">
-                        <span>Спринт 1</span>
+                        <span id="currentLevelDisplay">Спринт 1</span>
                     </div>
                 </div>
             </div>
             <canvas id="gameCanvas" width="800" height="600"></canvas>
             <div class="game-controls">
                 <button class="btn btn--outline" id="pauseBtn">Пауза</button>
+                <button class="btn btn--outline" id="restartLevelBtn">Перезапуск</button>
+            </div>
+        </div>
+
+        <!-- Level Complete Screen -->
+        <div id="levelCompleteScreen" class="screen hidden">
+            <div class="level-complete-content">
+                <h2 id="levelCompleteTitle">Спринт завершён!</h2>
+                <div class="score-display">
+                    <div class="score-item">
+                        <span class="score-label">Собрано багов:</span>
+                        <span class="score-value" id="levelBugCount">0</span>
+                    </div>
+                    <div class="score-item">
+                        <span class="score-label">Бонус за скорость:</span>
+                        <span class="score-value" id="levelSpeedBonus">0</span>
+                    </div>
+                    <div class="score-item">
+                        <span class="score-label">Очки за уровень:</span>
+                        <span class="score-value" id="levelScore">0</span>
+                    </div>
+                </div>
+                <div class="level-complete-buttons">
+                    <button class="btn btn--primary" id="nextLevelBtn">Следующий спринт</button>
+                    <button class="btn btn--secondary" id="replayLevelBtn">Повторить</button>
+                    <button class="btn btn--outline" id="backToLevelSelectBtn">Выбор спринта</button>
+                </div>
             </div>
         </div>
 
@@ -125,6 +198,7 @@
                 <h3>Пауза</h3>
                 <div class="pause-buttons">
                     <button class="btn btn--primary" id="resumeBtn">Продолжить</button>
+                    <button class="btn btn--secondary" id="restartPauseBtn">Перезапуск</button>
                     <button class="btn btn--outline" id="quitBtn">Выйти в меню</button>
                 </div>
             </div>
