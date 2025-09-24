@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bug Hunt: Platformer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <!-- Main Menu -->
+        <div id="mainMenu" class="screen">
+            <div class="menu-content">
+                <h1 class="game-title">Bug Hunt: Platformer</h1>
+                <p class="game-subtitle">Платформер для QA-инженеров</p>
+                <div class="menu-buttons">
+                    <button class="btn btn--primary" id="startGameBtn">Начать игру</button>
+                    <button class="btn btn--secondary" id="leaderboardBtn">Таблица лидеров</button>
+                    <button class="btn btn--outline" id="instructionsBtn">Инструкции</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Instructions Modal -->
+        <div id="instructionsModal" class="modal hidden">
+            <div class="modal-content">
+                <h3>Инструкции</h3>
+                <div class="instructions-text">
+                    <p><strong>Цель:</strong> Собери баги и доберись до Release Gate!</p>
+                    <p><strong>Управление:</strong></p>
+                    <ul>
+                        <li>WASD или стрелки - движение</li>
+                        <li>Пробел - прыжок</li>
+                    </ul>
+                    <p><strong>Элементы игры:</strong></p>
+                    <ul>
+                        <li>🐛 Обычные баги - 1 очко</li>
+                        <li>🦟 Летающие баги - 2 очка</li>
+                        <li>⚠️ Критические баги - 10 очков</li>
+                        <li>🚪 Release Gate - финиш уровня</li>
+                    </ul>
+                    <p><strong>Осторожно:</strong> Фальшивые платформы ломаются!</p>
+                    <p><strong>Время:</strong> 2 минуты на спринт</p>
+                </div>
+                <button class="btn btn--primary" id="closeInstructionsBtn">Понятно</button>
+            </div>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="gameScreen" class="screen hidden">
+            <div class="game-ui">
+                <div class="ui-left">
+                    <div class="bug-counter">
+                        <span class="bug-icon">🐛</span>
+                        <span id="bugCount">0</span>
+                    </div>
+                </div>
+                <div class="ui-center">
+                    <div class="timer">
+                        <span id="timeRemaining">2:00</span>
+                    </div>
+                </div>
+                <div class="ui-right">
+                    <div class="sprint-level">
+                        <span>Спринт 1</span>
+                    </div>
+                </div>
+            </div>
+            <canvas id="gameCanvas" width="800" height="600"></canvas>
+            <div class="game-controls">
+                <button class="btn btn--outline" id="pauseBtn">Пауза</button>
+            </div>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="gameOverScreen" class="screen hidden">
+            <div class="game-over-content">
+                <h2 id="gameOverTitle">Игра окончена</h2>
+                <div class="score-display">
+                    <div class="score-item">
+                        <span class="score-label">Собрано багов:</span>
+                        <span class="score-value" id="finalBugCount">0</span>
+                    </div>
+                    <div class="score-item">
+                        <span class="score-label">Бонус за скорость:</span>
+                        <span class="score-value" id="speedBonus">0</span>
+                    </div>
+                    <div class="score-item total">
+                        <span class="score-label">Общий счёт:</span>
+                        <span class="score-value" id="totalScore">0</span>
+                    </div>
+                </div>
+                <div class="rating-display">
+                    <span id="performanceRating">Новичок</span>
+                </div>
+                <div id="newHighScore" class="new-high-score hidden">
+                    <p>Новый рекорд!</p>
+                    <input type="text" id="playerNameInput" class="form-control" placeholder="Введите ваше имя" maxlength="20">
+                </div>
+                <div class="game-over-buttons">
+                    <button class="btn btn--primary" id="saveScoreBtn">Сохранить результат</button>
+                    <button class="btn btn--secondary" id="playAgainBtn">Играть снова</button>
+                    <button class="btn btn--outline" id="backToMenuBtn">В меню</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Leaderboard Screen -->
+        <div id="leaderboardScreen" class="screen hidden">
+            <div class="leaderboard-content">
+                <h2>Таблица лидеров</h2>
+                <div class="leaderboard-list" id="leaderboardList">
+                    <!-- Leaderboard entries will be populated by JavaScript -->
+                </div>
+                <div class="leaderboard-buttons">
+                    <button class="btn btn--secondary" id="clearScoresBtn">Очистить</button>
+                    <button class="btn btn--primary" id="backFromLeaderboardBtn">Назад</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pause Overlay -->
+        <div id="pauseOverlay" class="pause-overlay hidden">
+            <div class="pause-content">
+                <h3>Пауза</h3>
+                <div class="pause-buttons">
+                    <button class="btn btn--primary" id="resumeBtn">Продолжить</button>
+                    <button class="btn btn--outline" id="quitBtn">Выйти в меню</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
