@@ -816,6 +816,107 @@ body {
   font-size: var(--font-size-lg);
 }
 
+/* Level Selection Screen */
+.level-select-content {
+  text-align: center;
+  background: var(--color-surface);
+  border: 2px solid var(--color-primary);
+  border-radius: var(--radius-lg);
+  padding: var(--space-32);
+  box-shadow: 0 0 20px rgba(33, 128, 141, 0.3);
+  min-width: 600px;
+  max-width: 80vw;
+}
+
+.levels-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-20);
+  margin: var(--space-24) 0;
+}
+
+.level-card {
+  background: var(--color-bg-1);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-16);
+  cursor: pointer;
+  transition: all var(--duration-normal) var(--ease-standard);
+  position: relative;
+}
+
+.level-card:hover:not(.locked) {
+  border-color: var(--color-primary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.level-card.locked {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.level-card.unlocked {
+  border-color: var(--color-success);
+}
+
+.level-card.completed {
+  border-color: var(--color-primary);
+  background: var(--color-bg-3);
+}
+
+.level-number {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+  margin-bottom: var(--space-8);
+}
+
+.level-info h3 {
+  font-size: var(--font-size-lg);
+  color: var(--color-text);
+  margin-bottom: var(--space-4);
+}
+
+.level-difficulty {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-8);
+  font-weight: var(--font-weight-medium);
+}
+
+.level-description {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-12);
+}
+
+.level-status {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  padding: var(--space-4) var(--space-8);
+  border-radius: var(--radius-sm);
+}
+
+.level-status.unlocked {
+  background: var(--color-bg-3);
+  color: var(--color-success);
+}
+
+.level-status.locked {
+  background: var(--color-bg-4);
+  color: var(--color-error);
+}
+
+.level-status.completed {
+  background: var(--color-bg-1);
+  color: var(--color-primary);
+}
+
+.level-select-buttons {
+  margin-top: var(--space-20);
+}
+
 /* Game Screen */
 #gameScreen {
   flex-direction: column;
@@ -911,6 +1012,27 @@ body {
   bottom: var(--space-20);
   left: var(--space-20);
   z-index: 100;
+  display: flex;
+  gap: var(--space-8);
+}
+
+/* Level Complete Screen */
+.level-complete-content {
+  text-align: center;
+  background: var(--color-surface);
+  border: 2px solid var(--color-success);
+  border-radius: var(--radius-lg);
+  padding: var(--space-32);
+  box-shadow: 0 0 20px rgba(33, 128, 141, 0.3);
+  min-width: 450px;
+}
+
+.level-complete-buttons {
+  display: flex;
+  gap: var(--space-12);
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: var(--space-20);
 }
 
 /* Game Over Screen */
@@ -1140,6 +1262,7 @@ body {
   gap: var(--space-12);
   justify-content: center;
   margin-top: var(--space-20);
+  flex-wrap: wrap;
 }
 
 /* Responsive Design */
@@ -1153,7 +1276,9 @@ body {
   
   .menu-content,
   .game-over-content,
-  .leaderboard-content {
+  .leaderboard-content,
+  .level-select-content,
+  .level-complete-content {
     margin: var(--space-16);
     min-width: auto;
     max-width: 90vw;
@@ -1171,17 +1296,26 @@ body {
     font-size: var(--font-size-base);
     padding: var(--space-4) var(--space-8);
   }
+
+  .levels-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-12);
+  }
 }
 
 @media (max-width: 600px) {
   .game-over-buttons,
-  .leaderboard-buttons {
+  .leaderboard-buttons,
+  .level-complete-buttons,
+  .pause-buttons {
     flex-direction: column;
   }
   
   .menu-buttons .btn,
   .game-over-buttons .btn,
-  .leaderboard-buttons .btn {
+  .leaderboard-buttons .btn,
+  .level-complete-buttons .btn,
+  .pause-buttons .btn {
     min-width: auto;
     width: 100%;
   }
@@ -1199,6 +1333,12 @@ body {
   .ui-right {
     min-width: auto;
     flex: 1;
+  }
+
+  .game-controls {
+    flex-direction: column;
+    bottom: var(--space-12);
+    left: var(--space-12);
   }
 }
 
